@@ -1,5 +1,6 @@
 package com.example.android_ui_test_app
 
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -7,12 +8,17 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import io.scanbot.sdk.ScanbotSDK
+import io.scanbot.sdk.pdfgeneration.PageSize
+import io.scanbot.sdk.pdfgeneration.PdfConfiguration
 import io.scanbot.sdk.ui_v2.document.DocumentScannerActivity
 import io.scanbot.sdk.ui_v2.document.configuration.AcknowledgementMode
 import io.scanbot.sdk.ui_v2.document.configuration.DocumentScanningFlow
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
+    private val scanbotSdk by lazy { ScanbotSDK(this) }
     private lateinit var documentScannerResult: ActivityResultLauncher<DocumentScanningFlow>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +42,11 @@ class MainActivity : AppCompatActivity() {
         scannerButton.setOnClickListener {
             runSinglePageScanner()
         }
+
+        val createPDFButton = findViewById<Button>(R.id.create_pdf)
+        createPDFButton.setOnClickListener {
+            createPDF()
+        }
     }
 
     private fun runSinglePageScanner() {
@@ -44,5 +55,25 @@ class MainActivity : AppCompatActivity() {
             this.screens.camera.acknowledgement.acknowledgementMode = AcknowledgementMode.NONE
         }
         documentScannerResult.launch(config)
+    }
+
+    private fun createPDF() {
+        val uri = Uri.parse(
+            "android.resource://$packageName/drawable/sample_document.jpg"
+        )
+
+        val externalDir = getExternalFilesDir("scanbot-pdfs") // app-specific external folder
+        if (externalDir != null && !externalDir.exists()) {
+            externalDir.mkdirs()
+        }
+
+        // 5️⃣ Create the output PDF file
+        val outputFile = File(externalDir, "scanbot_document_${System.currentTimeMillis()}.pdf")
+
+
+        val pdfGenerator = scanbotSdk.createPdfGenerator()
+        val pdfConfig = PdfConfiguration.default().copy(pageSize = PageSize.A4)
+        val pdf = pdfGenerator.generate(imageFileUris = listOf(uri), outputFile = outputFile, pdfConfig = pdfConfig)
+
     }
 }
