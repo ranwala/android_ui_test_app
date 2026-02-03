@@ -1,5 +1,6 @@
 package com.example.android_ui_test_app
 
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
@@ -8,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import io.scanbot.common.onSuccess
 import io.scanbot.sdk.ScanbotSDK
 import io.scanbot.sdk.pdfgeneration.PageSize
 import io.scanbot.sdk.pdfgeneration.PdfConfiguration
@@ -58,9 +60,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createPDF() {
-        val uri = Uri.parse(
-            "android.resource://$packageName/drawable/sample_document.jpg"
-        )
+//        val uri = Uri.parse(
+//            "android.resource://$packageName/drawable/sample_document.jpg"
+//        )
 
         val externalDir = getExternalFilesDir("scanbot-pdfs") // app-specific external folder
         if (externalDir != null && !externalDir.exists()) {
@@ -71,9 +73,16 @@ class MainActivity : AppCompatActivity() {
         val outputFile = File(externalDir, "scanbot_document_${System.currentTimeMillis()}.pdf")
 
 
-        val pdfGenerator = scanbotSdk.createPdfGenerator()
-        val pdfConfig = PdfConfiguration.default().copy(pageSize = PageSize.A4)
-        val pdf = pdfGenerator.generate(imageFileUris = listOf(uri), outputFile = outputFile, pdfConfig = pdfConfig)
+        val bitmap = BitmapFactory.decodeResource(
+            resources,
+            R.drawable.sample_document
+        )
 
+        scanbotSdk.documentApi.createDocument().onSuccess { document ->
+            document.addPage(bitmap)
+            val pdfGenerator = scanbotSdk.createPdfGenerator()
+            val pdfConfig = PdfConfiguration.default().copy(pageSize = PageSize.A4)
+            val pdf = pdfGenerator.generate(document, outputFile, pdfConfig)
+        }
     }
 }
