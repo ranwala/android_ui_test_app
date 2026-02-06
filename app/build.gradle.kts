@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+val scanbotSdkVersion: String by rootProject.extra
+println("APP Scanbot SDK = $scanbotSdkVersion")
+
 android {
     namespace = "com.example.android_ui_test_app"
     compileSdk {
@@ -48,7 +51,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     // app/build.gradle.kts (dependencies section):
-    implementation("io.scanbot:sdk-package-1:8.0.0")
-    implementation("io.scanbot:rtu-ui-v2-bundle:8.0.0")
-    implementation("io.scanbot:sdk-docqualityanalyzer-assets:8.0.0")
+    implementation("io.scanbot:sdk-package-1:$scanbotSdkVersion")
+    implementation("io.scanbot:rtu-ui-v2-bundle:$scanbotSdkVersion")
+    implementation("io.scanbot:sdk-docqualityanalyzer-assets:$scanbotSdkVersion")
 }
